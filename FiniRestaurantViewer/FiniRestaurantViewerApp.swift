@@ -10,11 +10,11 @@ import SwiftUI
 @main
 struct FiniRestaurantViewerApp: App {
     let persistenceController = PersistenceController.shared
-
+    let yelpService = YelpService()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            RestaurantViewerView(businessService: yelpService)
         }
     }
 }

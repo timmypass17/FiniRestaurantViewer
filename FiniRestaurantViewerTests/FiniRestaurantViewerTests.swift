@@ -11,13 +11,15 @@ import Testing
 struct FiniRestaurantViewerTests {
     
     let yelpService = YelpService()
-    let latitude = 37.326026359388635
-    let longitude = -121.855836348311
+    
+    // Apple Park coordinates
+    let latitude = 37.334654741693086
+    let longitude = -122.0089568407792
     
     @Test func fetchRestaurants() async throws {
         let restaurants = try await yelpService.getBusinesses(latitude: latitude, longitude: longitude, term: "restaurants")
         #expect(restaurants.count > 0)
-        #expect(restaurants.contains { $0.name == "Blue Monkey Cafe & Restaurant"} )
+        #expect(restaurants.contains { $0.name == "Marufuku Ramen - Cupertino"} )
     }
 
 }
