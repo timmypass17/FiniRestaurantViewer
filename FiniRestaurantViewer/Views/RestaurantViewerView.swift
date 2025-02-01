@@ -20,76 +20,87 @@ struct RestaurantViewerView: View {
     }
     
     var body: some View {
-        VStack {
-            GeometryReader { geometry in
-                ScrollViewReader { scrollProxy in
-                    ScrollView(.horizontal) {
-                        HStack(spacing: 0) {
-                            ForEach(restaurantViewerViewModel.restaurants.indices, id: \.self) { index in
-                                CardView(business: restaurantViewerViewModel.restaurants[index])
-                                    .id(index) // for ScrollViewReader's scrollTo()
-                                    .padding(.horizontal, 65)
-                                    .frame(width: geometry.size.width)
-                                    .visualEffect { content, geometryProxy in
-                                        content
-                                            .scaleEffect(
-                                                scale(geometryProxy),
-                                                anchor: .trailing)
-                                            .rotationEffect(rotation(geometryProxy, rotation: 5))
-                                            .offset(x: minX(geometryProxy)) // stacks them on top of eachother
-                                            .offset(x: excessMinX(geometryProxy, offset: 8))
-                                    }
-                                    .zIndex(restaurantViewerViewModel.restaurants.zIndex(restaurantViewerViewModel.restaurants[index])) // to fix flipped deck overlapping
-                            }
-                        }
-                        .padding(.vertical, 15) // avoid top clipping when rotating
-                    }
-                    .scrollTargetBehavior(.paging)  // swipe to snap
-                    .scrollIndicators(.hidden)
-                    .scrollDisabled(true)   // disable swipe gestures, no need to sync scrollID
-                    
-                    HStack {
-                        Button {
-                            withAnimation {
-                                if restaurantViewerViewModel.currentIndex > 0 {
-                                    restaurantViewerViewModel.currentIndex -= 1
-                                    scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
+        GeometryReader { geometry in
+            ScrollViewReader { scrollProxy in
+                ScrollView(.horizontal) {
+                    HStack(spacing: 0) {
+                        ForEach(restaurantViewerViewModel.businesses.indices, id: \.self) { index in
+                            CardView(business: restaurantViewerViewModel.businesses[index], index: index)
+                                .id(index) // for ScrollViewReader's scrollTo()
+                                .frame(width: geometry.size.width)
+                                .visualEffect { content, geometryProxy in
+                                    content
+                                        .scaleEffect(
+                                            scale(geometryProxy),
+                                            anchor: .trailing)
+                                        .rotationEffect(rotation(geometryProxy, rotation: 5))
+                                        .offset(x: minX(geometryProxy)) // stacks them on top of eachother
+                                        .offset(x: excessMinX(geometryProxy, offset: 8))
                                 }
-                            }
-                        } label: {
-                            Image(systemName: "chevron.left")
-                                .frame(maxWidth: .infinity, maxHeight: 40)
-                                .foregroundStyle(.white)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .foregroundStyle(.black)
-                                }
-                        }
-                        
-                        Button {
-                            withAnimation {
-                                if restaurantViewerViewModel.currentIndex < restaurantViewerViewModel.restaurants.count - 1 {
-                                    restaurantViewerViewModel.currentIndex += 1
-                                    scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "chevron.right")
-                                .frame(maxWidth: .infinity, maxHeight: 40)
-                                .foregroundStyle(.white)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .foregroundStyle(.black)
-                                }
+                                .zIndex(restaurantViewerViewModel.businesses.zIndex(restaurantViewerViewModel.businesses[index])) // to fix flipped deck overlapping
                         }
                     }
-                    .padding(.horizontal, 60)
+                    .padding(.vertical, 15) // avoid top clipping when rotating
                 }
-                .frame(height: 450)
+                .scrollTargetBehavior(.paging)  // swipe to snap
+                .scrollIndicators(.hidden)
+                .scrollDisabled(true)   // disable swipe gestures, no need to sync scrollID
+                
+                HStack {
+                    Button {
+                        withAnimation {
+                            restaurantViewerViewModel.currentIndex = max(restaurantViewerViewModel.currentIndex - 1, 0)
+                            
+                            scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
+                            print("current index: \(restaurantViewerViewModel.currentIndex)")
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .frame(maxWidth: .infinity, maxHeight: 40)
+                            .foregroundStyle(.white)
+                            .background {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .foregroundStyle(.black)
+                            }
+                    }
+                    
+                    Button {
+                        withAnimation {
+                            restaurantViewerViewModel.currentIndex = min(restaurantViewerViewModel.currentIndex + 1, restaurantViewerViewModel.businesses.count - 1)
+                            scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
+                            print("current index: \(restaurantViewerViewModel.currentIndex)")
+                            
+                            if restaurantViewerViewModel.currentIndex == restaurantViewerViewModel.businesses.count - 1 {
+                                Task {
+                                    await restaurantViewerViewModel.loadMoreBusinesses()
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .frame(maxWidth: .infinity, maxHeight: 40)
+                            .foregroundStyle(.white)
+                            .background {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .foregroundStyle(.black)
+                            }
+                    }
+                }
+                .padding(.horizontal, 60)
+                
+                TextField("Search Term", text: $restaurantViewerViewModel.term)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal, 60)
+                    .onSubmit {
+                        Task {
+                            await restaurantViewerViewModel.didTapSearchButton()
+                        }
+                    }
+                    .submitLabel(.search)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.bar)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.bar)
     }
     
     private func minX(_ proxy: GeometryProxy) -> CGFloat {
@@ -124,6 +135,6 @@ struct RestaurantViewerView: View {
 
 #Preview {
     let view = RestaurantViewerView(businessService: YelpService())
-    view.restaurantViewerViewModel.restaurants = Business.sampleBusinesses
+    view.restaurantViewerViewModel.businesses = Business.sampleBusinesses
     return view
 }

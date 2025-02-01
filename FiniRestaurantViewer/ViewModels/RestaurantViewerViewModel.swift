@@ -9,18 +9,44 @@ import Foundation
 import CoreLocation
 import MapKit
 
+@MainActor  // ensure ui updates are on main thread
 @Observable class RestaurantViewerViewModel: NSObject {
     
-    var restaurants: [Business] = []
+    var businesses: [Business] = []
     var currentIndex = 0
-    var locationManager = CLLocationManager()
-    @ObservationIgnored var latitude: Double = 37.334654741693086   // infintely recreates viewmodel again
+    var term = "restaurants"
+    
+    @ObservationIgnored var businessService: BusinessService!
+    @ObservationIgnored var locationManager = CLLocationManager()
+    @ObservationIgnored var latitude: Double = 37.334654741693086
     @ObservationIgnored var longitude: Double = -122.0089568407792
-    var businessService: BusinessService!
+    @ObservationIgnored var isLoading = false
+    @ObservationIgnored var page = 0
+    @ObservationIgnored var limit = 20
     
     override init() {
         super.init()
         locationManager.delegate = self
+    }
+    
+    func loadMoreBusinesses() async {
+        guard !isLoading else { return }
+        isLoading = true
+        do {
+            let fetchedRestaurants = try await businessService.getBusinesses(latitude: latitude, longitude: longitude, term: term, limit: limit, offset: page * limit)
+            businesses.append(contentsOf: fetchedRestaurants)
+            page += 1
+        } catch {
+            print("Error loading restaurants")
+        }
+        isLoading = false
+    }
+    
+    func didTapSearchButton() async {
+        businesses.removeAll()
+        page = 0
+        currentIndex = 0
+        await loadMoreBusinesses()
     }
 }
 
@@ -40,11 +66,8 @@ extension RestaurantViewerViewModel: CLLocationManagerDelegate {
             latitude = coordinate.latitude
             longitude = coordinate.longitude
             Task {
-                let fetchedRestaurants = (try? await businessService.getBusinesses(latitude: latitude, longitude: longitude, term: "restaurants")) ?? []
-                restaurants.append(contentsOf: fetchedRestaurants)
-                restaurants.forEach { print($0.name) }
+                await loadMoreBusinesses()
             }
-            
         @unknown default:
             break
         }

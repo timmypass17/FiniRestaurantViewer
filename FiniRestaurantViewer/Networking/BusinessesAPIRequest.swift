@@ -12,14 +12,18 @@ let accessToken = "itoMaM6DJBtqD54BHSZQY9WdWR5xI_CnpZdxa3SG5i7N0M37VK1HklDDF4ifY
 struct BusinessesAPIRequest: APIRequest {
     var latitude: Double
     var longitude: Double
-    var term: String = "restaurants"    // TODO: Allow users to query anything (default to restaurants)
+    var term: String
+    var limit: Int
+    var offset: Int
     
     var urlRequest: URLRequest {
         var urlComponents = URLComponents(string: "https://api.yelp.com/v3/businesses/search")!
         urlComponents.queryItems = [
             "latitude": "\(latitude)",
             "longitude": "\(longitude)",
-            "term": term
+            "term": term,
+            "limit": "\(limit)",
+            "offset": "\(offset)"
         ].map { URLQueryItem(name: $0.key, value: $0.value) }
         
         var request = URLRequest(url: urlComponents.url!)

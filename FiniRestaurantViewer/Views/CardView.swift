@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CardView: View {
     let business: Business
+    let index: Int
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -16,14 +17,15 @@ struct CardView: View {
                 image
                     .resizable()
                     .scaledToFill()
-                    .frame(height: 200)
-                    .clipShape(.rect(topLeadingRadius: 15, topTrailingRadius: 15))
+
             } placeholder: {
-                ProgressView()
+                Color.secondary
             }
+            .frame(width: 300, height: 200)
+            .clipShape(.rect(topLeadingRadius: 15, topTrailingRadius: 15))
             
             VStack(alignment: .leading) {
-                Text(business.name)
+                Text("\(index + 1). \(business.name)")
                     .foregroundStyle(.black)
                     .font(.title3)
                     .fontWeight(.semibold)
@@ -35,7 +37,7 @@ struct CardView: View {
             Spacer()
             
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(width: 300, height: 350)
         .background(
             RoundedRectangle(cornerRadius: 15)
                 .fill(Color.white)
@@ -44,5 +46,6 @@ struct CardView: View {
 }
 
 #Preview {
-    CardView(business: Business.sampleBusinesses[0])
+    CardView(business: Business.sampleBusinesses[0], index: 1)
+        .border(.blue)
 }

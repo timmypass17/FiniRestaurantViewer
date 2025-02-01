@@ -21,11 +21,10 @@ enum APIRequestError: Error {
 func sendRequest<Request: APIRequest>(_ request: Request) async throws -> Request.Response {
     let (data, response) = try await URLSession.shared.data(for: request.urlRequest)
     
-    data.prettyPrintedJSONString()
+//    data.prettyPrintedJSONString()
     
     guard let httpResponse = response as? HTTPURLResponse,
           httpResponse.statusCode == 200 else {
-        print(response)
         throw APIRequestError.itemNotFound
     }
     

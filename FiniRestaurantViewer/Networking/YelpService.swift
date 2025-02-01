@@ -8,13 +8,15 @@
 import Foundation
 
 protocol BusinessService {
-    func getBusinesses(latitude: Double, longitude: Double, term: String) async throws -> [Business]
+    func getBusinesses(latitude: Double, longitude: Double, term: String, limit: Int, offset: Int) async throws -> [Business]
 }
 
 class YelpService: BusinessService {
     
-    func getBusinesses(latitude: Double, longitude: Double, term: String) async throws -> [Business] {
-        let request = BusinessesAPIRequest(latitude: latitude, longitude: longitude, term: term)
+    func getBusinesses(latitude: Double, longitude: Double, term: String, limit: Int, offset: Int) async throws -> [Business] {
+        print("limit: \(limit)")
+        print("offset: \(offset)")
+        let request = BusinessesAPIRequest(latitude: latitude, longitude: longitude, term: term, limit: limit, offset: offset)
         let businesses = try await sendRequest(request)
         return businesses
     }
