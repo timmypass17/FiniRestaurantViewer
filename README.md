@@ -1,3 +1,7 @@
+# Gif Walkthrough
+![walkthrough](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExd3NkZGFjZ3pucWZ1NjE4MW82cG1zcmk1bHVyNHFwaXRrMWxpZmRkciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gQbOJEFPNvIzySSxzx/giphy.gif)
+
+# Write Up
 1. How long did you spend working on the problem? What did you find to be the most difficult part?
 - I spent around 6-7 hours to complete. The most difficult part for me was building the UI for the stack of cards. It was my first time building a complex view like that so I had to do a lot of research like reading articles, watching videos and editing the view to match the problem description.
 2. What trade-offs did you make? What did you choose to spend time on, and what did you choose to ignore or do quickly for the sake of completing the project?
