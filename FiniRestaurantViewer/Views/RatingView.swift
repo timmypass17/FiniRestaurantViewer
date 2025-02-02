@@ -10,7 +10,6 @@ import SwiftUI
 struct RatingView: View {
     let rating: Float
     let reviewCount: Int
-
     let maximumRating = 5
     let onColor: Color = .red
     let offColor: Color = .gray

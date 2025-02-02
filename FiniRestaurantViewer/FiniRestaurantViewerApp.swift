@@ -9,12 +9,18 @@ import SwiftUI
 
 @main
 struct FiniRestaurantViewerApp: App {
-    let persistenceController = PersistenceController.shared
     let yelpService = YelpService()
+    let cdFavoriteService = CDFavoriteService()
     
     var body: some Scene {
         WindowGroup {
-            RestaurantViewerView(businessService: yelpService)
+            RestaurantViewerView(
+                restaurantViewerViewModel: RestaurantViewerViewModel(
+                    businessService: yelpService,
+                    favoriteService: cdFavoriteService
+                )
+            )
+            .environment(\.managedObjectContext, CoreDataStack.shared.persistentContainer.viewContext)
         }
     }
 }

@@ -9,14 +9,15 @@ import Foundation
 import CoreLocation
 import MapKit
 
-@MainActor  // ensure ui updates are on main thread
+@MainActor
 @Observable class RestaurantViewerViewModel: NSObject {
     
     var businesses: [Business] = []
+    var term = "Restaurants"
     var currentIndex = 0
-    var term = "restaurants"
     
     @ObservationIgnored var businessService: BusinessService!
+    @ObservationIgnored var favoriteService: FavoriteService!
     @ObservationIgnored var locationManager = CLLocationManager()
     @ObservationIgnored var latitude: Double = 37.334654741693086
     @ObservationIgnored var longitude: Double = -122.0089568407792
@@ -24,7 +25,9 @@ import MapKit
     @ObservationIgnored var page = 0
     @ObservationIgnored var limit = 20
     
-    override init() {
+    init(businessService: BusinessService, favoriteService: FavoriteService) {
+        self.businessService = businessService
+        self.favoriteService = favoriteService
         super.init()
         locationManager.delegate = self
     }
@@ -37,7 +40,7 @@ import MapKit
             businesses.append(contentsOf: fetchedRestaurants)
             page += 1
         } catch {
-            print("Error loading restaurants")
+            // Show alert to user that fetching business failed
         }
         isLoading = false
     }
@@ -47,6 +50,24 @@ import MapKit
         page = 0
         currentIndex = 0
         await loadMoreBusinesses()
+    }
+    
+    func addToFavorites(business: Business) {
+        do {
+            try favoriteService.addToFavorites(business: business)
+            print("Added \(business.name) to favorites!")
+        } catch {
+            // Show alert to user that add to favorites failed
+        }
+    }
+    
+    func removeFromFavorites(businessID: String) {
+        do {
+            try favoriteService.removeFromFavorites(businessID: businessID)
+            print("Removed \(businessID) from favorites!")
+        } catch {
+            // Show alert to user that remove from favorites failed
+        }
     }
 }
 

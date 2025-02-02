@@ -6,43 +6,46 @@
 //
 
 import SwiftUI
+import CoreData
 
 // TODO: Pagination
 struct RestaurantViewerView: View {
+    @Environment(\.managedObjectContext) private var context
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \FavoritedBusiness.title, ascending: true)])
+    private var favoritedBusinesses: FetchedResults<FavoritedBusiness>
     
     @State var restaurantViewerViewModel: RestaurantViewerViewModel
-    
-    init(businessService: BusinessService) {
-        let viewModel = RestaurantViewerViewModel()
-        viewModel.businessService = businessService
-        
-        self.restaurantViewerViewModel = viewModel
-    }
-    
+
     var body: some View {
         GeometryReader { geometry in
             ScrollViewReader { scrollProxy in
                 ScrollView(.horizontal) {
                     HStack(spacing: 0) {
                         ForEach(restaurantViewerViewModel.businesses.indices, id: \.self) { index in
-                            CardView(business: restaurantViewerViewModel.businesses[index], index: index)
-                                .id(index) // for ScrollViewReader's scrollTo()
-                                .frame(width: geometry.size.width)
-                                .visualEffect { content, geometryProxy in
-                                    content
-                                        .scaleEffect(
-                                            scale(geometryProxy),
-                                            anchor: .trailing)
-                                        .rotationEffect(rotation(geometryProxy, rotation: 5))
-                                        .offset(x: minX(geometryProxy)) // stacks them on top of eachother
-                                        .offset(x: excessMinX(geometryProxy, offset: 8))
-                                }
-                                .zIndex(restaurantViewerViewModel.businesses.zIndex(restaurantViewerViewModel.businesses[index])) // to fix flipped deck overlapping
+                            let business = restaurantViewerViewModel.businesses[index]
+                            CardView(
+                                business: business,
+                                index: index,
+                                isFavorited: favoritedBusinesses.contains { $0.id == business.id }
+                            )
+                            .id(index) // for scrollTo()
+                            .frame(width: geometry.size.width)
+                            .visualEffect { content, geometryProxy in
+                                content
+                                    .scaleEffect(
+                                        scale(geometryProxy),
+                                        anchor: .trailing)
+                                    .rotationEffect(rotation(geometryProxy, rotation: 5))   // rotate card
+                                    .offset(x: minX(geometryProxy)) // stacks them on top of eachother
+                                    .offset(x: excessMinX(geometryProxy, offset: 8))
+                            }
+                            .zIndex(restaurantViewerViewModel.businesses.zIndex(business)) // to fix flipped deck overlapping
+                            .environment(restaurantViewerViewModel)
                         }
                     }
                     .padding(.vertical, 15) // avoid top clipping when rotating
                 }
-                .scrollTargetBehavior(.paging)  // swipe to snap
+                .scrollTargetBehavior(.paging)  // swipe to snap when scrolling
                 .scrollIndicators(.hidden)
                 .scrollDisabled(true)   // disable swipe gestures, no need to sync scrollID
                 
@@ -50,9 +53,7 @@ struct RestaurantViewerView: View {
                     Button {
                         withAnimation {
                             restaurantViewerViewModel.currentIndex = max(restaurantViewerViewModel.currentIndex - 1, 0)
-                            
                             scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
-                            print("current index: \(restaurantViewerViewModel.currentIndex)")
                         }
                     } label: {
                         Image(systemName: "chevron.left")
@@ -68,7 +69,6 @@ struct RestaurantViewerView: View {
                         withAnimation {
                             restaurantViewerViewModel.currentIndex = min(restaurantViewerViewModel.currentIndex + 1, restaurantViewerViewModel.businesses.count - 1)
                             scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
-                            print("current index: \(restaurantViewerViewModel.currentIndex)")
                             
                             if restaurantViewerViewModel.currentIndex == restaurantViewerViewModel.businesses.count - 1 {
                                 Task {
@@ -134,7 +134,7 @@ struct RestaurantViewerView: View {
 }
 
 #Preview {
-    let view = RestaurantViewerView(businessService: YelpService())
+    let view = RestaurantViewerView(restaurantViewerViewModel: RestaurantViewerViewModel(businessService: YelpService(), favoriteService: CDFavoriteService()))
     view.restaurantViewerViewModel.businesses = Business.sampleBusinesses
     return view
 }

@@ -17,7 +17,7 @@ struct FiniRestaurantViewerTests {
     let longitude = -122.0089568407792
     
     @Test func fetchRestaurants() async throws {
-        let restaurants = try await yelpService.getBusinesses(latitude: latitude, longitude: longitude, term: "restaurants")
+        let restaurants = try await yelpService.getBusinesses(latitude: latitude, longitude: longitude, term: "restaurants", limit: 20, offset: 0)
         #expect(restaurants.count > 0)
         #expect(restaurants.contains { $0.name == "Marufuku Ramen - Cupertino"} )
     }

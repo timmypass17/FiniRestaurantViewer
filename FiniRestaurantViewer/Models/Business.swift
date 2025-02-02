@@ -8,7 +8,7 @@
 import Foundation
 
 struct Business: Decodable {
-    var id: String  // TODO: persist later in Core Data for favorites
+    var id: String
     var name: String
     var imageUrl: String
     var rating: Float
