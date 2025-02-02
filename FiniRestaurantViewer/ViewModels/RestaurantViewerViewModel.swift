@@ -8,6 +8,7 @@
 import Foundation
 import CoreLocation
 import MapKit
+import SwiftUI
 
 @MainActor
 @Observable class RestaurantViewerViewModel: NSObject {
@@ -67,6 +68,23 @@ import MapKit
             print("Removed \(businessID) from favorites!")
         } catch {
             // Show alert to user that remove from favorites failed
+        }
+    }
+    
+    func didTapPreviousButton(scrollProxy: ScrollViewProxy) {
+        currentIndex = max(currentIndex - 1, 0)
+        scrollProxy.scrollTo(currentIndex)
+    }
+    
+    func didTapNextButton(scrollProxy: ScrollViewProxy) {
+        currentIndex = min(currentIndex + 1, businesses.count - 1)
+        scrollProxy.scrollTo(currentIndex)
+        
+        
+        if currentIndex == businesses.count - 1 {
+            Task {
+                await loadMoreBusinesses()
+            }
         }
     }
 }

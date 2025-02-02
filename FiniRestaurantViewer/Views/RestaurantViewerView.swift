@@ -52,8 +52,7 @@ struct RestaurantViewerView: View {
                 HStack {
                     Button {
                         withAnimation {
-                            restaurantViewerViewModel.currentIndex = max(restaurantViewerViewModel.currentIndex - 1, 0)
-                            scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
+                            restaurantViewerViewModel.didTapPreviousButton(scrollProxy: scrollProxy)
                         }
                     } label: {
                         Image(systemName: "chevron.left")
@@ -67,14 +66,7 @@ struct RestaurantViewerView: View {
                     
                     Button {
                         withAnimation {
-                            restaurantViewerViewModel.currentIndex = min(restaurantViewerViewModel.currentIndex + 1, restaurantViewerViewModel.businesses.count - 1)
-                            scrollProxy.scrollTo(restaurantViewerViewModel.currentIndex)
-                            
-                            if restaurantViewerViewModel.currentIndex == restaurantViewerViewModel.businesses.count - 1 {
-                                Task {
-                                    await restaurantViewerViewModel.loadMoreBusinesses()
-                                }
-                            }
+                            restaurantViewerViewModel.didTapNextButton(scrollProxy: scrollProxy)
                         }
                     } label: {
                         Image(systemName: "chevron.right")
